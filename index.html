@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Premium Key Generator - Step 2</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #ffffff;
+      --primary-dark: #e0e0e0;
+      --secondary: #808080;
+      --accent: #a0a0a0;
+      --dark: #121212;
+      --light: #f5f6fa;
+      --success: #909090;
+      --warning: #a0a0a0;
+      --danger: #707070;
+      --text: #ffffff;
+      --card-bg: rgba(35, 35, 35, 0.95);
+      --discord: #5865F2;
+      --progress-line: rgba(255, 255, 255, 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--dark);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Анимированный фон с эффектами */
+    .background-effects {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      filter: blur(0.5px);
+      animation: float linear infinite;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0) translateX(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-100vh) translateX(20px) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    /* Основной контейнер с улучшенным дизайном */
+    .container {
+      max-width: 850px;
+      width: 100%;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.05),
+        inset 0 0 20px rgba(255, 255, 255, 0.03);
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      position: relative;
+      z-index: 1;
+      margin-bottom: 20px;
+    }
+
+    .container::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.1),
+        rgba(128, 128, 128, 0.05),
+        rgba(255, 255, 255, 0.1)
+      );
+      border-radius: 22px;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* Хедер */
+    .header {
+      background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(128,128,128,0.1));
+      padding: 25px;
+      text-align: center;
+      position: relative;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .header h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+      color: white;
+      text-shadow: 0 2px 10px rgba(255, 255, 255, 0.1);
+    }
+
+    .header p {
+      opacity: 0.8;
+      font-size: 0.95rem;
+      color: var(--secondary);
+    }
+
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: white;
+    }
+
+    .discord-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: white;
+      color: black;
+      padding: 8px 15px;
+      border-radius: 50px;
+      font-weight: 600;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .discord-btn:hover {
+      background: #f0f0f0;
+      transform: translateY(-2px);
+    }
+
+    /* Контент */
+    .content {
+      padding: 30px;
+      position: relative;
+    }
+
+    /* Прогресс бар */
+    .progress-container {
+      margin-bottom: 30px;
+      position: relative;
+    }
+
+    .progress-steps {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .progress-steps::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--progress-line);
+      transform: translateY(-50%);
+      z-index: 1;
+      border-radius: 3px;
+    }
+
+    .progress-bar {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      transform: translateY(-50%);
+      z-index: 2;
+      border-radius: 3px;
+      transition: width 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+      width: 0%;
+    }
+
+    .step {
+      width: 42px;
+      height: 42px;
+      background: var(--card-bg);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      z-index: 3;
+      transition: all 0.5s ease;
+      border: 2px solid var(--progress-line);
+    }
+
+    .step.active {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: var(--dark);
+      font-weight: bold;
+      border-color: var(--primary);
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    }
+
+    .step.completed {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+      box-shadow: 0 0 15px rgba(144, 144, 144, 0.3);
+    }
+
+    .step i {
+      font-size: 1.2rem;
+    }
+
+    .progress-text {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+      font-size: 0.9rem;
+      color: var(--secondary);
+    }
+
+    .progress-text span.active {
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    /* Секция с ключом */
+    .key-section {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 30px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.3s ease;
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .key-section:hover {
+      background: rgba(0, 0, 0, 0.35);
+    }
+
+    .key-section h2 {
+      margin-bottom: 15px;
+      font-size: 1.3rem;
+      color: var(--primary);
+    }
+
+    .key-display {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 1.2rem;
+      font-family: monospace;
+      letter-spacing: 1px;
+      margin-bottom: 25px;
+      word-break: break-all;
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+      position: relative;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .key-display.empty {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .key-display .key {
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    /* История ключей */
+    .key-history {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      border: 1px dashed rgba(255, 255, 255, 0.05);
+      margin-bottom: 30px;
+      white-space: nowrap;
+      overflow-x: auto;
+    }
+
+    .key-history h3 {
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+      color: var(--secondary);
+    }
+
+    .key-history ul {
+      list-style: none;
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.7);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .key-history li {
+      font-family: monospace;
+      display: inline;
+    }
+
+    .key-history li:not(:last-child)::after {
+      content: ',';
+      margin-right: 5px;
+    }
+
+    /* Кнопки */
+    .key-actions {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .btn {
+      padding: 12px 25px;
+      border: none;
+      border-radius: 50px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+    }
+
+    .btn-primary {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-primary:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .btn-success {
+      background: rgba(144, 144, 144, 0.3);
+      color: white;
+      border: 1px solid rgba(144, 144, 144, 0.5);
+    }
+
+    .btn-success:hover {
+      background: rgba(144, 144, 144, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(144, 144, 144, 0.2);
+    }
+
+    .btn:disabled {
+      background: rgba(255, 255, 255, 0.03) !important;
+      color: rgba(255, 255, 255, 0.3) !important;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+      border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    }
+
+    /* Статус бар */
+    .status-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .status-item {
+      text-align: center;
+      flex: 1;
+    }
+
+    .status-item h3 {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 5px;
+    }
+
+    .status-item p {
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+
+    .status-item .time {
+      color: var(--primary);
+    }
+
+    .status-item .count {
+      color: var(--primary);
+    }
+
+    .status-item .status {
+      color: var(--secondary);
+      text-transform: uppercase;
+    }
+
+    /* Модальное окно */
+    .checkpoint-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .checkpoint-modal.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      border-radius: 15px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+    }
+
+    .checkpoint-modal.active .modal-content {
+      transform: translateY(0);
+    }
+
+    .modal-content h2 {
+      margin-bottom: 15px;
+      color: var(--primary);
+    }
+
+    .modal-content p {
+      margin-bottom: 25px;
+      opacity: 0.8;
+      color: var(--secondary);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    /* Toast уведомление */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--success);
+      color: var(--dark);
+      padding: 12px 25px;
+      border-radius: 50px;
+      font-weight: 600;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 1000;
+    }
+
+    .toast.active {
+      opacity: 1;
+    }
+
+    /* Privacy Policy в контейнере */
+    .privacy-container {
+      position: absolute;
+      bottom: 15px;
+      right: 25px;
+    }
+
+    .privacy-link {
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: opacity 0.2s;
+    }
+
+    .privacy-link:hover {
+      opacity: 0.8;
+      text-decoration: underline;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 600px) {
+      .content {
+        padding: 20px;
+      }
+      
+      .status-info {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .key-actions {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .header h1 {
+        font-size: 1.8rem;
+        padding-top: 10px;
+      }
+
+      .logo, .discord-btn {
+        position: static;
+        display: inline-block;
+        margin-bottom: 10px;
+      }
+
+      .cookie-consent {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+      }
+
+      .cookie-consent-content {
+        width: 100%;
+      }
+
+      .cookie-consent-buttons {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .cookie-btn {
+        flex: 1;
+      }
+      
+      .privacy-container {
+        position: static;
+        text-align: right;
+        padding: 10px 0;
+        margin-top: 15px;
+      }
+    }
+
+    /* Анимации */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+  </style>
+</head>
+<body>
+  <!-- Анимированный фон с эффектами -->
+  <div class="background-effects" id="backgroundEffects"></div>
+
+  <!-- Основной контейнер -->
+  <div class="container">
+    <div class="header">
+      <div class="logo">KEYGEN</div>
+      <a href="https://discord.gg/your-invite-link" class="discord-btn" target="_blank">
+        <i class="fab fa-discord"></i> Join Discord
+      </a>
+      <h1>Premium Key Generator</h1>
+      <p>Complete checkpoints to generate your unique key</p>
+    </div>
+
+    <div class="content">
+      <div class="progress-container">
+        <div class="progress-steps">
+          <div class="progress-bar" id="progressBar" style="width: 50%;"></div>
+          <div class="step completed" id="step1">
+            <span>1</span>
+          </div>
+          <div class="step active" id="step2">
+            <span>2</span>
+          </div>
+          <div class="step" id="step3">
+            <i class="fas fa-key"></i>
+          </div>
+        </div>
+        <div class="progress-text">
+          <span id="progressText1" class="active">Visit 1st link</span>
+          <span id="progressText2" class="active">Visit 2nd link</span>
+          <span id="progressText3">Get Key</span>
+        </div>
+      </div>
+
+      <div class="status-info">
+        <div class="status-item">
+          <h3>YOUR KEYS</h3>
+          <p class="count" id="keyCount">0/1</p>
+        </div>
+        <div class="status-item">
+          <h3>TIME LEFT</h3>
+          <p class="time" id="timeLeft">00:00:00</p>
+        </div>
+        <div class="status-item">
+          <h3>STATUS</h3>
+          <p class="status" id="statusText">CHECKPOINT 1 COMPLETED</p>
+        </div>
+      </div>
+
+      <div class="key-section">
+        <h2 id="keyTitle">YOUR PREMIUM KEY</h2>
+        <div class="key-display" id="keyDisplay">
+          <div class="empty">Complete all checkpoints to generate your key</div>
+        </div>
+        
+        <!-- История ключей -->
+        <div class="key-history" id="keyHistory">
+          <h3>Previous Keys</h3>
+          <ul id="keyHistoryList"></ul>
+        </div>
+        
+        <div class="key-actions">
+          <button class="btn btn-primary" id="startBtn" disabled>
+            <i class="fas fa-play"></i> Start Process
+          </button>
+          <button class="btn btn-secondary" id="continueBtn">
+            <i class="fas fa-arrow-right"></i> Continue
+          </button>
+          <button class="btn btn-success" id="generateBtn" disabled>
+            <i class="fas fa-key"></i> Generate Key
+          </button>
+          <button class="btn btn-secondary" id="copyBtn" disabled>
+            <i class="fas fa-copy"></i> Copy Key
+          </button>
+        </div>
+      </div>
+      
+      <!-- Privacy Policy внутри контейнера -->
+      <div class="privacy-container">
+        <a href="https://example.com/privacy-policy" class="privacy-link" target="_blank">Privacy Policy</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Key copied to clipboard!</div>
+
+  <form id="keyForm" action="https://script.google.com/macros/s/AKfycbzPBgXm5h0M4WlnbbAYh801VGmRDV0VaEMOs2vHbGtS-CmyGHwgmGamhiQ1YvfEagKIMA/exec" method="POST" target="hiddenFrame">
+    <input type="hidden" name="key" id="keyInput">
+  </form>
+  <iframe name="hiddenFrame" style="display:none;"></iframe>
+
+  <script>
+    // Инициализация фоновых эффектов
+    function initBackgroundEffects() {
+      const container = document.getElementById('backgroundEffects');
+      
+      // Добавляем частицы (увеличил количество)
+      const particleCount = 300;
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        
+        const size = Math.random() * 6 + 2;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.bottom = `-${size}px`;
+        
+        const duration = Math.random() * 30 + 20;
+        particle.style.animationDuration = `${duration}s`;
+        particle.style.animationDelay = `${Math.random() * 15}s`;
+        
+        container.appendChild(particle);
+      }
+    }
+
+    // DOM Elements
+    const startBtn = document.getElementById('startBtn');
+    const continueBtn = document.getElementById('continueBtn');
+    const generateBtn = document.getElementById('generateBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const keyDisplay = document.getElementById('keyDisplay');
+    const keyTitle = document.getElementById('keyTitle');
+    const progressBar = document.getElementById('progressBar');
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    const progressText1 = document.getElementById('progressText1');
+    const progressText2 = document.getElementById('progressText2');
+    const progressText3 = document.getElementById('progressText3');
+    const keyCount = document.getElementById('keyCount');
+    const timeLeft = document.getElementById('timeLeft');
+    const statusText = document.getElementById('statusText');
+    const toast = document.getElementById('toast');
+    const keyInput = document.getElementById('keyInput');
+    const keyHistoryList = document.getElementById('keyHistoryList');
+    
+    // State
+    let currentStep = 1;
+    let generatedKey = '';
+    let keyGeneratedTime = 0;
+    const KEY_EXPIRY_HOURS = 12;
+    const checkpointLinks = [
+      'https://example.com/checkpoint1',
+      'https://example.com/checkpoint2'
+    ];
+    let refreshTimer = null;
+    // Идентификатор сессии для предотвращения обновления страницы
+    let sessionId = Date.now().toString();
+    
+    // Проверка, можно ли генерировать ключ
+    function canGenerateKey() {
+      const storedTime = localStorage.getItem('generatedTime');
+      if (!storedTime) return true;
+      
+      const now = Date.now();
+      const elapsed = now - parseInt(storedTime);
+      const expiryTime = KEY_EXPIRY_HOURS * 60 * 60 * 1000;
+      
+      return elapsed > expiryTime;
+    }
+
+    // Initialize
+    function init() {
+      initBackgroundEffects();
+      checkStoredKey();
+      updateProgress();
+      updateTimer();
+      loadKeyHistory();
+      
+      // Проверяем, вернулись ли мы с чекпоинта
+      const storedCheckpoint = localStorage.getItem('currentCheckpoint');
+      const storedSession = localStorage.getItem('checkpointSession');
+      
+      if (storedCheckpoint && storedSession === sessionId) {
+        const step = parseInt(storedCheckpoint);
+        currentStep = step;
+        updateProgress();
+        
+        if (step === 2) {
+          showToast('Checkpoints completed! You can now generate your key.');
+        }
+        
+        localStorage.removeItem('currentCheckpoint');
+      }
+      
+      startBtn.addEventListener('click', startProcess);
+      continueBtn.addEventListener('click', visitSecondCheckpoint);
+      generateBtn.addEventListener('click', generateKey);
+      copyBtn.addEventListener('click', copyKey);
+    }
+    
+    function loadKeyHistory() {
+      const history = JSON.parse(localStorage.getItem('keyHistory')) || [];
+      keyHistoryList.innerHTML = '';
+      
+      if (history.length === 0) {
+        keyHistoryList.innerHTML = '<li>No previous keys</li>';
+        return;
+      }
+      
+      // Показываем последние 5 ключей через запятую
+      const recentKeys = history.slice(-5).reverse();
+      recentKeys.forEach((key, index) => {
+        const li = document.createElement('li');
+        li.textContent = key;
+        keyHistoryList.appendChild(li);
+      });
+    }
+    
+    function addToHistory(key) {
+      let history = JSON.parse(localStorage.getItem('keyHistory')) || [];
+      history.push(key);
+      localStorage.setItem('keyHistory', JSON.stringify(history));
+      loadKeyHistory();
+    }
+    
+    function startProcess() {
+      // На втором сайте кнопка Start Process отключена
+      return;
+    }
+    
+    function visitSecondCheckpoint() {
+      const url = checkpointLinks[1];
+      
+      // Сохраняем информацию о чекпоинте с идентификатором сессии
+      localStorage.setItem('currentCheckpoint', '2');
+      localStorage.setItem('checkpointSession', sessionId);
+      
+      window.location.href = url;
+    }
+    
+    function updateProgress() {
+      step1.classList.remove('active', 'completed');
+      step2.classList.remove('active', 'completed');
+      step3.classList.remove('active', 'completed');
+      progressText1.classList.remove('active');
+      progressText2.classList.remove('active');
+      progressText3.classList.remove('active');
+      
+      if (currentStep === 1) {
+        progressBar.style.width = '50%';
+        step1.classList.add('completed');
+        step2.classList.add('active');
+        progressText1.classList.add('active');
+        progressText2.classList.add('active');
+        startBtn.disabled = true;
+        continueBtn.disabled = false;
+        generateBtn.disabled = true;
+        statusText.textContent = 'CHECKPOINT 1 COMPLETED';
+      } else if (currentStep === 2) {
+        progressBar.style.width = '75%';
+        step1.classList.add('completed');
+        step2.classList.add('completed');
+        step3.classList.add('active');
+        progressText1.classList.add('active');
+        progressText2.classList.add('active');
+        progressText3.classList.add('active');
+        startBtn.disabled = true;
+        continueBtn.disabled = true;
+        generateBtn.disabled = !canGenerateKey();
+        statusText.textContent = 'CHECKPOINT 2 COMPLETED';
+      }
+      
+      const hasKey = localStorage.getItem('generatedKey') ? 1 : 0;
+      keyCount.textContent = `${hasKey}/1`;
+    }
+    
+    function generateKey() {
+      // Проверяем, можно ли генерировать ключ
+      if (!canGenerateKey()) {
+        showToast('You can generate a key only once every 12 hours');
+        return;
+      }
+      
+      const key = generateRandomKey();
+      const timestamp = Date.now();
+      
+      localStorage.setItem('generatedKey', key);
+      localStorage.setItem('generatedTime', timestamp.toString());
+      generatedKey = key;
+      keyGeneratedTime = timestamp;
+      
+      addToHistory(key);
+      
+      keyDisplay.innerHTML = `<div class="key">${key}</div>`;
+      keyTitle.textContent = 'YOUR PREMIUM KEY';
+      step3.classList.add('completed');
+      progressBar.style.width = '100%';
+      progressText3.classList.add('active');
+      generateBtn.disabled = true;
+      copyBtn.disabled = false;
+      statusText.textContent = 'ACTIVE';
+      keyCount.textContent = '1/1';
+      
+      // Сбрасываем состояние процесса
+      currentStep = 0;
+      
+      sendKeyToGoogleSheets(key);
+      showToast('Key generated successfully!');
+      setupAutoRefresh();
+    }
+    
+    function setupAutoRefresh() {
+      if (refreshTimer) {
+        clearTimeout(refreshTimer);
+      }
+      
+      refreshTimer = setTimeout(() => {
+        localStorage.removeItem('generatedKey');
+        localStorage.removeItem('generatedTime');
+        window.location.reload();
+      }, KEY_EXPIRY_HOURS * 60 * 60 * 1000);
+    }
+    
+    function generateRandomKey() {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let result = 'KNC-';
+      for (let i = 0; i < 12; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    }
+    
+    function sendKeyToGoogleSheets(key) {
+      keyInput.value = key;
+      setTimeout(() => {
+        document.getElementById('keyForm').submit();
+      }, 100);
+    }
+    
+    function copyKey() {
+      if (!generatedKey) return;
+      
+      navigator.clipboard.writeText(generatedKey).then(() => {
+        showToast('Key copied to clipboard!');
+      }).catch(err => {
+        console.error('Failed to copy key:', err);
+      });
+    }
+    
+    function checkStoredKey() {
+      const storedKey = localStorage.getItem('generatedKey');
+      const storedTime = localStorage.getItem('generatedTime');
+      
+      if (storedKey && storedTime) {
+        const now = Date.now();
+        const elapsed = now - parseInt(storedTime);
+        const expiryTime = KEY_EXPIRY_HOURS * 60 * 60 * 1000;
+        
+        if (elapsed < expiryTime) {
+          generatedKey = storedKey;
+          keyGeneratedTime = parseInt(storedTime);
+          keyDisplay.innerHTML = `<div class="key">${storedKey}</div>`;
+          keyTitle.textContent = 'YOUR PREMIUM KEY';
+          copyBtn.disabled = false;
+          statusText.textContent = 'ACTIVE';
+          keyCount.textContent = '1/1';
+          
+          step1.classList.add('completed');
+          step2.classList.add('completed');
+          step3.classList.add('completed');
+          progressBar.style.width = '100%';
+          progressText1.classList.add('active');
+          progressText2.classList.add('active');
+          progressText3.classList.add('active');
+          generateBtn.disabled = true;
+          continueBtn.disabled = true;
+          startBtn.disabled = true;
+          
+          setupAutoRefresh();
+        } else {
+          localStorage.removeItem('generatedKey');
+          localStorage.removeItem('generatedTime');
+          currentStep = 0;
+          updateProgress();
+        }
+      }
+    }
+    
+    function updateTimer() {
+      const storedTime = localStorage.getItem('generatedTime');
+      
+      if (!storedTime) {
+        timeLeft.textContent = '00:00:00';
+        return;
+      }
+      
+      const now = Date.now();
+      const elapsed = now - parseInt(storedTime);
+      const remaining = KEY_EXPIRY_HOURS * 60 * 60 * 1000 - elapsed;
+      
+      if (remaining <= 0) {
+        localStorage.removeItem('generatedKey');
+        localStorage.removeItem('generatedTime');
+        timeLeft.textContent = '00:00:00';
+        return;
+      }
+      
+      const hours = Math.floor(remaining / (1000 * 60 * 60));
+      const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+      
+      timeLeft.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+    
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('active');
+      setTimeout(() => {
+        toast.classList.remove('active');
+      }, 3000);
+    }
+    
+    setInterval(updateTimer, 1000);
+    window.addEventListener('load', init);
+  </script>
+</body>
+</html>
