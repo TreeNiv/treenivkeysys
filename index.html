@@ -814,80 +814,170 @@
       }
     }
 
-    // DOM Elements
-    const startBtn = document.getElementById('startBtn');
-    const continueBtn = document.getElementById('continueBtn');
-    const generateBtn = document.getElementById('generateBtn');
-    const copyBtn = document.getElementById('copyBtn');
-    const keyDisplay = document.getElementById('keyDisplay');
-    const keyTitle = document.getElementById('keyTitle');
-    const progressBar = document.getElementById('progressBar');
-    const step1 = document.getElementById('step1');
-    const step2 = document.getElementById('step2');
-    const step3 = document.getElementById('step3');
-    const progressText1 = document.getElementById('progressText1');
-    const progressText2 = document.getElementById('progressText2');
-    const progressText3 = document.getElementById('progressText3');
-    const keyCount = document.getElementById('keyCount');
-    const timeLeft = document.getElementById('timeLeft');
-    const statusText = document.getElementById('statusText');
-    const toast = document.getElementById('toast');
-    const keyInput = document.getElementById('keyInput');
-    const keyHistoryList = document.getElementById('keyHistoryList');
-    
-    // State
-    let currentStep = 1;
-    let generatedKey = '';
-    let keyGeneratedTime = 0;
-    const KEY_EXPIRY_HOURS = 12;
-    const checkpointLinks = [
-      'https://link-hub.net/1342865/LDbN33zwmjYB',
-    ];
-    let refreshTimer = null;
-    // Идентификатор сессии для предотвращения обновления страницы
-    let sessionId = Date.now().toString();
-    
-    // Проверка, можно ли генерировать ключ
-    function canGenerateKey() {
-      const storedTime = localStorage.getItem('generatedTime');
-      if (!storedTime) return true;
-      
-      const now = Date.now();
-      const elapsed = now - parseInt(storedTime);
-      const expiryTime = KEY_EXPIRY_HOURS * 60 * 60 * 1000;
-      
-      return elapsed > expiryTime;
-    }
+// DOM Elements
+const startBtn = document.getElementById('startBtn');
+const continueBtn = document.getElementById('continueBtn');
+const generateBtn = document.getElementById('generateBtn');
+const copyBtn = document.getElementById('copyBtn');
+const keyDisplay = document.getElementById('keyDisplay');
+const keyTitle = document.getElementById('keyTitle');
+const progressBar = document.getElementById('progressBar');
+const step1 = document.getElementById('step1');
+const step2 = document.getElementById('step2');
+const step3 = document.getElementById('step3');
+const progressText1 = document.getElementById('progressText1');
+const progressText2 = document.getElementById('progressText2');
+const progressText3 = document.getElementById('progressText3');
+const keyCount = document.getElementById('keyCount');
+const timeLeft = document.getElementById('timeLeft');
+const statusText = document.getElementById('statusText');
+const checkpointModal = document.createElement('div');
+checkpointModal.id = 'checkpointModal';
+checkpointModal.className = 'checkpoint-modal';
+checkpointModal.innerHTML = `
+  <div class="modal-content">
+    <h2 id="modalTitle">Checkpoint</h2>
+    <p id="modalText">Please visit the following link and return to this page to continue.</p>
+    <div class="modal-actions">
+      <button class="btn btn-success" id="visitLinkBtn">Visit Link</button>
+      <button class="btn btn-secondary" id="cancelModalBtn">Cancel</button>
+    </div>
+  </div>
+`;
+document.body.appendChild(checkpointModal);
+const modalTitle = document.getElementById('modalTitle');
+const modalText = document.getElementById('modalText');
+const visitLinkBtn = document.getElementById('visitLinkBtn');
+const cancelModalBtn = document.getElementById('cancelModalBtn');
+const toast = document.getElementById('toast');
+const keyInput = document.getElementById('keyInput');
+const keyHistoryList = document.getElementById('keyHistoryList');
 
-    // Initialize
-    function init() {
-      initBackgroundEffects();
-      checkStoredKey();
-      updateProgress();
-      updateTimer();
-      loadKeyHistory();
-      
-      // Проверяем, вернулись ли мы с чекпоинта
-      const storedCheckpoint = localStorage.getItem('currentCheckpoint');
-      const storedSession = localStorage.getItem('checkpointSession');
-      
-      if (storedCheckpoint && storedSession === sessionId) {
-        const step = parseInt(storedCheckpoint);
-        currentStep = step;
-        updateProgress();
-        
-        if (step === 2) {
-          showToast('Checkpoints completed! You can now generate your key.');
-        }
-        
-        localStorage.removeItem('currentCheckpoint');
-      }
-      
-      startBtn.addEventListener('click', startProcess);
-      continueBtn.addEventListener('click', visitSecondCheckpoint);
-      generateBtn.addEventListener('click', generateKey);
-      copyBtn.addEventListener('click', copyKey);
+// State
+let currentStep = 1;
+let generatedKey = '';
+let keyGeneratedTime = 0;
+const KEY_EXPIRY_HOURS = 12;
+const checkpointLinks = [
+  'https://link-hub.net/1342865/LDbN33zwmjYB',
+  'https://example.com/checkpoint2'
+];
+const adLink = 'https://www.profitableratecpm.com/srddr2t9?key=bf6f75b240992269ae27f4ae790191e4';
+let currentCheckpoint = 0;
+let refreshTimer = null;
+
+function startProcess() {
+  if (!canGenerateKey()) {
+    showToast('You can generate a key only once every 12 hours');
+    return;
+  }
+  
+  // Сбрасываем счетчик рекламы
+  localStorage.removeItem('adShownCount');
+  currentCheckpoint = 0;
+  openCheckpointModal();
+}
+
+function continueProcess() {
+  // Сбрасываем счетчик рекламы
+  localStorage.removeItem('adShownCount');
+  currentCheckpoint = 1;
+  openCheckpointModal();
+}
+
+function openCheckpointModal() {
+  if (currentCheckpoint === 0) {
+    modalTitle.textContent = 'Checkpoint 1';
+    modalText.textContent = 'Please visit the following link and return to this page to continue.';
+    
+    visitLinkBtn.onclick = function() {
+      handleAdBeforeCheckpoint(checkpointLinks[0], '1');
+    };
+    
+    checkpointModal.classList.add('active');
+  } else if (currentCheckpoint === 1) {
+    modalTitle.textContent = 'Checkpoint 2';
+    modalText.textContent = 'Please visit the following link and return to this page to continue.';
+    
+    visitLinkBtn.onclick = function() {
+      handleAdBeforeCheckpoint(checkpointLinks[1], '2');
+    };
+    
+    checkpointModal.classList.add('active');
+  }
+}
+
+function canGenerateKey() {
+  const storedTime = localStorage.getItem('generatedTime');
+  if (!storedTime) return true;
+
+  const now = Date.now();
+  const elapsed = now - parseInt(storedTime);
+  const expiryTime = KEY_EXPIRY_HOURS * 60 * 60 * 1000;
+
+  return elapsed > expiryTime;
+}
+
+function handleAdBeforeCheckpoint(checkpointUrl, checkpointNumber) {
+  let adShownCount = parseInt(localStorage.getItem('adShownCount')) || 0;
+  adShownCount++;
+  localStorage.setItem('adShownCount', adShownCount.toString());
+  
+  // Всегда открываем рекламу
+  const adWindow = window.open(adLink, '_blank');
+  
+  if (adShownCount < 2) {
+    showToast(`Please visit the ad link (${adShownCount}/2)`);
+    // Фокусируем окно с рекламой
+    if (adWindow) {
+      adWindow.focus();
     }
+  } else {
+    // После 2 показов рекламы переходим на чекпоинт
+    setTimeout(() => {
+      window.location.href = checkpointUrl + '?source=' + encodeURIComponent(window.location.href) + '&checkpoint=' + checkpointNumber;
+      localStorage.removeItem('adShownCount');
+      checkpointModal.classList.remove('active');
+    }, 1000);
+  }
+}
+
+// Initialize
+function init() {
+  initBackgroundEffects();
+  checkStoredKey();
+  updateProgress();
+  updateTimer();
+  loadKeyHistory();
+  
+  // Проверяем, вернулись ли мы с чекпоинта
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has('checkpoint')) {
+    const checkpoint = urlParams.get('checkpoint');
+    
+    if (checkpoint === '1') {
+      currentStep = 1;
+      updateProgress();
+      showToast('Checkpoint 1 completed!');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (checkpoint === '2') {
+      currentStep = 2;
+      updateProgress();
+      showToast('Checkpoint 2 completed!');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }
+  
+  startBtn.addEventListener('click', startProcess);
+  continueBtn.addEventListener('click', continueProcess);
+  generateBtn.addEventListener('click', generateKey);
+  copyBtn.addEventListener('click', copyKey);
+  cancelModalBtn.addEventListener('click', closeModal);
+}
+
+function closeModal() {
+  checkpointModal.classList.remove('active');
+}
     
     function loadKeyHistory() {
       const history = JSON.parse(localStorage.getItem('keyHistory')) || [];
