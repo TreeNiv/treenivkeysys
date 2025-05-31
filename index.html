@@ -813,6 +813,22 @@ function initBackgroundEffects() {
   }
 }
 
+// Создаем модальное окно для чекпоинтов
+const checkpointModal = document.createElement('div');
+checkpointModal.id = 'checkpointModal';
+checkpointModal.className = 'checkpoint-modal';
+checkpointModal.innerHTML = `
+  <div class="modal-content">
+    <h2 id="modalTitle">Checkpoint</h2>
+    <p id="modalText">Please visit the following link and return to this page to continue.</p>
+    <div class="modal-actions">
+      <button class="btn btn-success" id="visitLinkBtn">Visit Link</button>
+      <button class="btn btn-secondary" id="cancelModalBtn">Cancel</button>
+    </div>
+  </div>
+`;
+document.body.appendChild(checkpointModal);
+
 // DOM Elements
 const startBtn = document.getElementById('startBtn');
 const continueBtn = document.getElementById('continueBtn');
@@ -833,28 +849,11 @@ const statusText = document.getElementById('statusText');
 const toast = document.getElementById('toast');
 const keyInput = document.getElementById('keyInput');
 const keyHistoryList = document.getElementById('keyHistoryList');
-
-// Создаем модальное окно для чекпоинтов
-const checkpointModal = document.createElement('div');
-checkpointModal.id = 'checkpointModal';
-checkpointModal.className = 'checkpoint-modal';
-checkpointModal.innerHTML = `
-  <div class="modal-content">
-    <h2 id="modalTitle">Checkpoint</h2>
-    <p id="modalText">Please visit the following link and return to this page to continue.</p>
-    <div class="modal-actions">
-      <button class="btn btn-success" id="visitLinkBtn">Visit Link</button>
-      <button class="btn btn-secondary" id="cancelModalBtn">Cancel</button>
-    </div>
-  </div>
-`;
-document.body.appendChild(checkpointModal);
 const modalTitle = document.getElementById('modalTitle');
 const modalText = document.getElementById('modalText');
 const visitLinkBtn = document.getElementById('visitLinkBtn');
 const cancelModalBtn = document.getElementById('cancelModalBtn');
 
-// State
 // State
 let currentStep = 1;
 let generatedKey = '';
@@ -867,13 +866,6 @@ const checkpointLinks = [
 const adLink = 'https://www.profitableratecpm.com/srddr2t9?key=bf6f75b240992269ae27f4ae790191e4';
 let currentCheckpoint = 0;
 let refreshTimer = null;
-
-// DOM Elements
-const checkpointModal = document.getElementById('checkpointModal');
-const modalTitle = document.getElementById('modalTitle');
-const modalText = document.getElementById('modalText');
-const visitLinkBtn = document.getElementById('visitLinkBtn');
-const cancelModalBtn = document.getElementById('cancelModalBtn');
 
 function startProcess() {
   // На втором сайте кнопка Start Process отключена
@@ -964,14 +956,6 @@ function init() {
   }
   
   // Добавляем обработчики событий
-  startBtn.addEventListener('click', startProcess);
-  continueBtn.addEventListener('click', continueProcess);
-  generateBtn.addEventListener('click', generateKey);
-  copyBtn.addEventListener('click', copyKey);
-  cancelModalBtn.addEventListener('click', closeModal);
-}
-  
-  // Назначаем обработчики событий
   startBtn.addEventListener('click', startProcess);
   continueBtn.addEventListener('click', continueProcess);
   generateBtn.addEventListener('click', generateKey);
