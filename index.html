@@ -169,6 +169,62 @@
       position: relative;
     }
 
+    /* Модальное окно */
+    .checkpoint-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+ 
+    .checkpoint-modal.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+ 
+    .modal-content {
+      background: var(--card-bg);
+      border-radius: 15px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+    }
+ 
+    .checkpoint-modal.active .modal-content {
+      transform: translateY(0);
+    }
+ 
+    .modal-content h2 {
+      margin-bottom: 15px;
+      color: var(--primary);
+    }
+ 
+    .modal-content p {
+      margin-bottom: 25px;
+      opacity: 0.8;
+      color: var(--secondary);
+    }
+ 
+    .modal-actions {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
     /* Прогресс бар */
     .progress-container {
       margin-bottom: 30px;
@@ -699,6 +755,21 @@
     </div>
   </div>
 
+  <div class="checkpoint-modal" id="checkpointModal">
+    <div class="modal-content">
+      <h2 id="modalTitle">Checkpoint 1</h2>
+      <p id="modalText">Please visit the following link and return to this page to continue.</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="cancelModalBtn">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+        <button class="btn btn-primary pulse" id="visitLinkBtn">
+          <i class="fas fa-external-link-alt"></i> Visit Link
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast">Key copied to clipboard!</div>
 
   <form id="keyForm" action="https://script.google.com/macros/s/AKfycbzPBgXm5h0M4WlnbbAYh801VGmRDV0VaEMOs2vHbGtS-CmyGHwgmGamhiQ1YvfEagKIMA/exec" method="POST" target="hiddenFrame">
@@ -795,6 +866,11 @@ function continueProcess() {
 }
 
 function openCheckpointModal() {
+  if (!modalTitle || !modalText || !visitLinkBtn) {
+    console.error('Modal elements not found');
+    return;
+  }
+  
   if (currentCheckpoint === 0) {
     modalTitle.textContent = 'Checkpoint 1';
     modalText.textContent = 'Please visit the following link and return to this page to continue.';
@@ -870,11 +946,14 @@ function init() {
     }
   }
   
-  startBtn.addEventListener('click', startProcess);
-  continueBtn.addEventListener('click', continueProcess);
-  generateBtn.addEventListener('click', generateKey);
-  copyBtn.addEventListener('click', copyKey);
-  cancelModalBtn.addEventListener('click', closeModal);
+  // Безопасное добавление обработчиков событий
+  if (startBtn) startBtn.addEventListener('click', startProcess);
+  if (continueBtn) continueBtn.addEventListener('click', continueProcess);
+  if (generateBtn) generateBtn.addEventListener('click', generateKey);
+  if (copyBtn) copyBtn.addEventListener('click', copyKey);
+  
+  // Добавляем только если элементы существуют
+  if (cancelModalBtn) cancelModalBtn.addEventListener('click', closeModal);
 }
 
 function loadKeyHistory() {
