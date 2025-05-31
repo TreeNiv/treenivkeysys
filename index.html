@@ -813,22 +813,6 @@ function initBackgroundEffects() {
   }
 }
 
-// Создаем модальное окно для чекпоинтов
-const checkpointModal = document.createElement('div');
-checkpointModal.id = 'checkpointModal';
-checkpointModal.className = 'checkpoint-modal';
-checkpointModal.innerHTML = `
-  <div class="modal-content">
-    <h2 id="modalTitle">Checkpoint</h2>
-    <p id="modalText">Please visit the following link and return to this page to continue.</p>
-    <div class="modal-actions">
-      <button class="btn btn-success" id="visitLinkBtn">Visit Link</button>
-      <button class="btn btn-secondary" id="cancelModalBtn">Cancel</button>
-    </div>
-  </div>
-`;
-document.body.appendChild(checkpointModal);
-
 // DOM Elements
 const startBtn = document.getElementById('startBtn');
 const continueBtn = document.getElementById('continueBtn');
@@ -927,6 +911,219 @@ function handleAdBeforeCheckpoint(checkpointUrl, checkpointNumber) {
 
 function closeModal() {
   checkpointModal.classList.remove('active');
+}
+
+function updateProgress() {
+  step1.classList.remove('active', 'completed');
+  step2.classList.remove('active', 'completed');
+  step3.classList.remove('active', 'completed');
+  progressText1.classList.remove('active');
+  progressText2.classList.remove('active');
+  progressText3.classList.remove('active');
+
+  if (currentStep === 1) {
+    progressBar.style.width = '50%';
+    step1.classList.add('completed');
+    step2.classList.add('active');
+    progressText1.classList.add('active');
+    progressText2.classList.add('active');
+    startBtn.disabled = true;
+    continueBtn.disabled = false;
+    generateBtn.disabled = true;
+    statusText.textContent = 'CHECKPOINT 1 COMPLETED';
+  } else if (currentStep === 2) {
+    progressBar.style.width = '100%';
+    step1.classList.add('completed');
+    step2.classList.add('completed');
+    step3.classList.add('active');
+    progressText1.classList.add('active');
+    progressText2.classList.add('active');
+    progressText3.classList.add('active');
+    startBtn.disabled = true;
+    continueBtn.disabled = true;
+    generateBtn.disabled = !canGenerateKey();
+    statusText.textContent = 'CHECKPOINT 2 COMPLETED';
+  }
+
+  const hasKey = localStorage.getItem('generatedKey') ? 1 : 0;
+  keyCount.textContent = `${hasKey}/1`;
+}
+
+function canGenerateKey() {
+  const storedTime = localStorage.getItem('generatedTime');
+  if (!storedTime) return true;
+
+  const now = Date.now();
+  const elapsed = now - parseInt(storedTime);
+  const expiryTime = KEY_EXPIRY_HOURS * 60 * 60 * 1000;
+
+  return elapsed > expiryTime;
+}
+
+function generateKey() {
+  generatedKey = generateRandomKey();
+  keyGeneratedTime = Date.now();
+  
+  localStorage.setItem('generatedKey', generatedKey);
+  localStorage.setItem('generatedTime', keyGeneratedTime.toString());
+  
+  keyDisplay.innerHTML = `<div class="key">${generatedKey}</div>`;
+  keyTitle.textContent = 'YOUR PREMIUM KEY';
+  copyBtn.disabled = false;
+  
+  addToHistory(generatedKey);
+  sendKeyToGoogleSheets(generatedKey);
+  
+  currentStep = 3;
+  updateProgress();
+  statusText.textContent = 'ACTIVE';
+  keyCount.textContent = '1/1';
+  
+  setupAutoRefresh();
+  showToast('Key generated successfully!');
+}
+
+function generateRandomKey() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = 'KNC-';
+  for (let i = 0; i < 12; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+function loadKeyHistory() {
+  const history = JSON.parse(localStorage.getItem('keyHistory')) || [];
+  keyHistoryList.innerHTML = '';
+
+  if (history.length === 0) {
+    keyHistoryList.innerHTML = '<li>No previous keys</li>';
+    return;
+  }
+
+  const recentKeys = history.slice(-5).reverse();
+  recentKeys.forEach((key, index) => {
+    const li = document.createElement('li');
+    li.textContent = key;
+    keyHistoryList.appendChild(li);
+  });
+}
+
+function addToHistory(key) {
+  let history = JSON.parse(localStorage.getItem('keyHistory')) || [];
+  history.push(key);
+  localStorage.setItem('keyHistory', JSON.stringify(history));
+  loadKeyHistory();
+}
+
+function sendKeyToGoogleSheets(key) {
+  keyInput.value = key;
+  setTimeout(() => {
+    document.getElementById('keyForm').submit();
+  }, 100);
+}
+
+function copyKey() {
+  if (!generatedKey) return;
+
+  navigator.clipboard.writeText(generatedKey).then(() => {
+    showToast('Key copied to clipboard!');
+  }).catch(err => {
+    console.error('Failed to copy key:', err);
+  });
+}
+
+function checkStoredKey() {
+  const storedKey = localStorage.getItem('generatedKey');
+  const storedTime = localStorage.getItem('generatedTime');
+
+  if (storedKey && storedTime) {
+    const now = Date.now();
+    const elapsed = now - parseInt(storedTime);
+    const expiryTime = KEY_EXPIRY_HOURS * 60 * 60 * 1000;
+
+    if (elapsed < expiryTime) {
+      generatedKey = storedKey;
+      keyGeneratedTime = parseInt(storedTime);
+      keyDisplay.innerHTML = `<div class="key">${storedKey}</div>`;
+      keyTitle.textContent = 'YOUR PREMIUM KEY';
+      copyBtn.disabled = false;
+      statusText.textContent = 'ACTIVE';
+      keyCount.textContent = '1/1';
+
+      step1.classList.add('completed');
+      step2.classList.add('completed');
+      step3.classList.add('completed');
+      progressBar.style.width = '100%';
+      progressText1.classList.add('active');
+      progressText2.classList.add('active');
+      progressText3.classList.add('active');
+      generateBtn.disabled = true;
+      continueBtn.disabled = true;
+      startBtn.disabled = true;
+
+      setupAutoRefresh();
+    } else {
+      localStorage.removeItem('generatedKey');
+      localStorage.removeItem('generatedTime');
+      currentStep = 0;
+      updateProgress();
+    }
+  }
+}
+
+function updateTimer() {
+  const storedTime = localStorage.getItem('generatedTime');
+
+  if (!storedTime) {
+    timeLeft.textContent = '00:00:00';
+    return;
+  }
+
+  const now = Date.now();
+  const elapsed = now - parseInt(storedTime);
+  const remaining = KEY_EXPIRY_HOURS * 60 * 60 * 1000 - elapsed;
+
+  if (remaining <= 0) {
+    localStorage.removeItem('generatedKey');
+    localStorage.removeItem('generatedTime');
+    timeLeft.textContent = '00:00:00';
+    return;
+  }
+
+  const hours = Math.floor(remaining / (1000 * 60 * 60));
+  const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+
+  timeLeft.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+function setupAutoRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  
+  refreshTimer = setInterval(() => {
+    const storedTime = localStorage.getItem('generatedTime');
+    if (!storedTime) return;
+    
+    const now = Date.now();
+    const elapsed = now - parseInt(storedTime);
+    const expiryTime = KEY_EXPIRY_HOURS * 60 * 60 * 1000;
+    
+    if (elapsed > expiryTime) {
+      clearInterval(refreshTimer);
+      localStorage.removeItem('generatedKey');
+      localStorage.removeItem('generatedTime');
+      location.reload();
+    }
+  }, 60000);
+}
+
+function showToast(message) {
+  toast.textContent = message;
+  toast.classList.add('active');
+  setTimeout(() => {
+    toast.classList.remove('active');
+  }, 3000);
 }
 
 // Initialize
