@@ -784,12 +784,7 @@ window.onVerified = function(response) {
   document.getElementById("privacyModal").style.display = "flex";
 };
 
-// Обработчик принятия политики конфиденциальности
-document.getElementById('privacyAcceptBtn').addEventListener('click', function() {
-  document.getElementById("privacyModal").style.display = "none";
-  document.querySelector(".container").style.display = "block";
-  initBackgroundEffects();
-});
+
 
 function initBackgroundEffects() {
   const container = document.getElementById('backgroundEffects');
