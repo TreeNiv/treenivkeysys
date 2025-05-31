@@ -980,7 +980,7 @@
         if (elapsed < expiryTime) {
           generatedKey = storedKey;
           keyGeneratedTime = parseInt(storedTime);
-          keyDisplay.innerHTML = `<div class="key">${key}</div>`;
+          keyDisplay.innerHTML = `<div class="key">${storedKey}</div>`;
           keyTitle.textContent = 'YOUR PREMIUM KEY';
           copyBtn.disabled = false;
           statusText.textContent = 'ACTIVE';
