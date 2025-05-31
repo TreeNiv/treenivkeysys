@@ -707,6 +707,23 @@
   <iframe name="hiddenFrame" style="display:none;"></iframe>
 
   <script>
+
+// Проверка доступа ко второму сайту
+(function verifyAccessToCheckpoint2() {
+  const token = localStorage.getItem('accessToken2');
+  const flag = localStorage.getItem('checkpointPassed1');
+
+  // Убедимся, что токен и флаг существуют
+  if (!token || !flag || flag !== 'true') {
+    // Удаляем лишние данные
+    localStorage.removeItem('accessToken2');
+    localStorage.removeItem('checkpointPassed1');
+
+    // Перенаправляем на первый сайт
+    window.location.href = 'https://treeniv.github.io/treenivkesys/'; // Укажите здесь URL первого сайта
+  }
+})();
+
     // Инициализация фоновых эффектов
     function initBackgroundEffects() {
       const container = document.getElementById('backgroundEffects');
