@@ -778,23 +778,37 @@
   <iframe name="hiddenFrame" style="display:none;"></iframe>
 
 <script>
-// --- ЛОГИКА ЧЕКПОИНТОВ С ОТКРЫТИЕМ РЕКЛАМЫ, КАК В ПЕРВОМ КОДЕ ---
+(function(){
+  // Проверяем, есть ли флаг чекпоинта 1
+  if (localStorage.getItem('checkpoint1') !== 'ok') {
+    // Если нет, отправляем на первый сайт
+    window.location.href = 'https://treenivkesys.netlify.app/';
+  } else {
+    // Если есть, ставим флаг чекпоинта 2
+    localStorage.setItem('checkpoint2', 'ok');
+  }
+})();
 
-// Фоновая анимация
+// Инициализация фоновых эффектов
 function initBackgroundEffects() {
   const container = document.getElementById('backgroundEffects');
+  
+  // Добавляем частицы
   const particleCount = 300;
   for (let i = 0; i < particleCount; i++) {
     const particle = document.createElement('div');
     particle.classList.add('particle');
+    
     const size = Math.random() * 6 + 2;
     particle.style.width = `${size}px`;
     particle.style.height = `${size}px`;
     particle.style.left = `${Math.random() * 100}%`;
     particle.style.bottom = `-${size}px`;
+    
     const duration = Math.random() * 30 + 20;
     particle.style.animationDuration = `${duration}s`;
     particle.style.animationDelay = `${Math.random() * 15}s`;
+    
     container.appendChild(particle);
   }
 }
@@ -819,125 +833,84 @@ const statusText = document.getElementById('statusText');
 const toast = document.getElementById('toast');
 const keyInput = document.getElementById('keyInput');
 const keyHistoryList = document.getElementById('keyHistoryList');
-
-// === Новый модал для чекпоинта (создаем динамически, если его нет) ===
-let checkpointModal = document.getElementById('checkpointModal');
-if (!checkpointModal) {
-  checkpointModal = document.createElement('div');
-  checkpointModal.className = 'checkpoint-modal';
-  checkpointModal.id = 'checkpointModal';
-  checkpointModal.innerHTML = `
-    <div class="modal-content">
-      <h2 id="modalTitle"></h2>
-      <p id="modalText"></p>
-      <div class="modal-actions">
-        <button class="btn btn-primary" id="visitLinkBtn">Visit Link</button>
-        <button class="btn btn-secondary" id="cancelModalBtn">Cancel</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(checkpointModal);
-}
-const modalTitle = checkpointModal.querySelector('#modalTitle');
-const modalText = checkpointModal.querySelector('#modalText');
-const visitLinkBtn = checkpointModal.querySelector('#visitLinkBtn');
-const cancelModalBtn = checkpointModal.querySelector('#cancelModalBtn');
+const modalTitle = document.getElementById('modalTitle');
+const modalText = document.getElementById('modalText');
+const visitLinkBtn = document.getElementById('visitLinkBtn');
+const cancelModalBtn = document.getElementById('cancelModalBtn');
 
 // State
 let currentStep = 1;
 let generatedKey = '';
 let keyGeneratedTime = 0;
 const KEY_EXPIRY_HOURS = 12;
-// checkpointLinks: первый - рекламный чекпоинт, второй - переход на третий сайт (если нужен)
 const checkpointLinks = [
-  'https://link-hub.net/1342865/LDbN33zwmjYB'
+  'https://link-hub.net/1342865/LDbN33zwmjYB',
+  'https://example.com/checkpoint2'
 ];
 const adLink = 'https://www.profitableratecpm.com/srddr2t9?key=bf6f75b240992269ae27f4ae790191e4';
+let currentCheckpoint = 0;
 let refreshTimer = null;
 
-// === Логика показа рекламы на чекпоинте 2 ===
+function startProcess() {
+  // На втором сайте кнопка Start Process отключена
+  return;
+}
+
+function continueProcess() {
+  // Сбрасываем счетчик рекламы
+  localStorage.removeItem('adShownCount');
+  currentCheckpoint = 1;
+  openCheckpointModal();
+}
+
 function openCheckpointModal() {
-  modalTitle.textContent = 'Checkpoint 2';
-  modalText.textContent = 'Please visit the following link and return to this page to continue.';
-
-  visitLinkBtn.onclick = function() {
-    handleAdBeforeCheckpoint(checkpointLinks[0], '2');
-  };
-
-  checkpointModal.classList.add('active');
+  if (currentCheckpoint === 0) {
+    modalTitle.textContent = 'Checkpoint 1';
+    modalText.textContent = 'Please visit the following link and return to this page to continue.';
+    
+    visitLinkBtn.onclick = function() {
+      handleAdBeforeCheckpoint(checkpointLinks[0], '1');
+    };
+    
+    checkpointModal.classList.add('active');
+  } else if (currentCheckpoint === 1) {
+    modalTitle.textContent = 'Checkpoint 2';
+    modalText.textContent = 'Please visit the following link and return to this page to continue.';
+    
+    visitLinkBtn.onclick = function() {
+      handleAdBeforeCheckpoint(checkpointLinks[1], '2');
+    };
+    
+    checkpointModal.classList.add('active');
+  }
 }
 
-function closeModal() {
-  checkpointModal.classList.remove('active');
-}
-
-// Функция показа рекламы перед переходом на чекпоинт (аналогично первому сайту)
 function handleAdBeforeCheckpoint(checkpointUrl, checkpointNumber) {
-  let adShownCount = parseInt(localStorage.getItem('adShownCount2')) || 0;
+  let adShownCount = parseInt(localStorage.getItem('adShownCount')) || 0;
   adShownCount++;
-  localStorage.setItem('adShownCount2', adShownCount.toString());
-
-  // Открываем рекламу
+  localStorage.setItem('adShownCount', adShownCount.toString());
+  
+  // Всегда открываем рекламу
   const adWindow = window.open(adLink, '_blank');
-
+  
   if (adShownCount < 2) {
     showToast(`Please visit the ad link (${adShownCount}/2)`);
-    if (adWindow) adWindow.focus();
+    // Фокусируем окно с рекламой
+    if (adWindow) {
+      adWindow.focus();
+    }
   } else {
+    // После 2 показов рекламы переходим на чекпоинт
     setTimeout(() => {
       window.location.href = checkpointUrl + '?source=' + encodeURIComponent(window.location.href) + '&checkpoint=' + checkpointNumber;
-      localStorage.removeItem('adShownCount2');
+      localStorage.removeItem('adShownCount');
       checkpointModal.classList.remove('active');
     }, 1000);
   }
 }
 
-// Проверка, можно ли генерировать ключ
-function canGenerateKey() {
-  const storedTime = localStorage.getItem('generatedTime');
-  if (!storedTime) return true;
-  const now = Date.now();
-  const elapsed = now - parseInt(storedTime);
-  const expiryTime = KEY_EXPIRY_HOURS * 60 * 60 * 1000;
-  return elapsed > expiryTime;
-}
-
-// === Основная инициализация ===
-function init() {
-  initBackgroundEffects();
-  checkStoredKey();
-  updateProgress();
-  updateTimer();
-  loadKeyHistory();
-
-  // Проверяем, вернулись ли мы с чекпоинта
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.has('checkpoint')) {
-    const checkpoint = urlParams.get('checkpoint');
-    if (checkpoint === '2') {
-      currentStep = 2;
-      updateProgress();
-      showToast('Checkpoint 2 completed!');
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }
-
-  startBtn.addEventListener('click', function() {
-    showToast('Start Process is disabled on this page.');
-  });
-
-  continueBtn.addEventListener('click', function() {
-    // Открываем модал для чекпоинта 2, где будет реклама
-    openCheckpointModal();
-  });
-
-  generateBtn.addEventListener('click', generateKey);
-  copyBtn.addEventListener('click', copyKey);
-
-  visitLinkBtn.addEventListener('click', function(e) {
-    e.preventDefault();
-  });
-  cancelModalBtn.addEventListener('click', closeModal);
+function closeModal() {
+  checkpointModal.classList.remove('active');
 }
 
 function updateProgress() {
@@ -976,34 +949,38 @@ function updateProgress() {
   keyCount.textContent = `${hasKey}/1`;
 }
 
+function canGenerateKey() {
+  const storedTime = localStorage.getItem('generatedTime');
+  if (!storedTime) return true;
+
+  const now = Date.now();
+  const elapsed = now - parseInt(storedTime);
+  const expiryTime = KEY_EXPIRY_HOURS * 60 * 60 * 1000;
+
+  return elapsed > expiryTime;
+}
+
 function generateKey() {
-  if (!canGenerateKey()) {
-    showToast('You can generate a key only once every 12 hours');
-    return;
-  }
-  const key = generateRandomKey();
-  const timestamp = Date.now();
-
-  localStorage.setItem('generatedKey', key);
-  localStorage.setItem('generatedTime', timestamp.toString());
-  generatedKey = key;
-  keyGeneratedTime = timestamp;
-
-  addToHistory(key);
-
-  keyDisplay.innerHTML = `<div class="key">${key}</div>`;
+  generatedKey = generateRandomKey();
+  keyGeneratedTime = Date.now();
+  
+  localStorage.setItem('generatedKey', generatedKey);
+  localStorage.setItem('generatedTime', keyGeneratedTime.toString());
+  
+  keyDisplay.innerHTML = `<div class="key">${generatedKey}</div>`;
   keyTitle.textContent = 'YOUR PREMIUM KEY';
-  step3.classList.add('completed');
-  progressBar.style.width = '100%';
-  progressText3.classList.add('active');
-  generateBtn.disabled = true;
   copyBtn.disabled = false;
+  
+  addToHistory(generatedKey);
+  sendKeyToGoogleSheets(generatedKey);
+  
+  currentStep = 3;
+  updateProgress();
   statusText.textContent = 'ACTIVE';
   keyCount.textContent = '1/1';
-
-  showToast('Key generated successfully!');
+  
   setupAutoRefresh();
-  sendKeyToGoogleSheets(key);
+  showToast('Key generated successfully!');
 }
 
 function generateRandomKey() {
@@ -1015,6 +992,30 @@ function generateRandomKey() {
   return result;
 }
 
+function loadKeyHistory() {
+  const history = JSON.parse(localStorage.getItem('keyHistory')) || [];
+  keyHistoryList.innerHTML = '';
+
+  if (history.length === 0) {
+    keyHistoryList.innerHTML = '<li>No previous keys</li>';
+    return;
+  }
+
+  const recentKeys = history.slice(-5).reverse();
+  recentKeys.forEach((key, index) => {
+    const li = document.createElement('li');
+    li.textContent = key;
+    keyHistoryList.appendChild(li);
+  });
+}
+
+function addToHistory(key) {
+  let history = JSON.parse(localStorage.getItem('keyHistory')) || [];
+  history.push(key);
+  localStorage.setItem('keyHistory', JSON.stringify(history));
+  loadKeyHistory();
+}
+
 function sendKeyToGoogleSheets(key) {
   keyInput.value = key;
   setTimeout(() => {
@@ -1024,6 +1025,7 @@ function sendKeyToGoogleSheets(key) {
 
 function copyKey() {
   if (!generatedKey) return;
+
   navigator.clipboard.writeText(generatedKey).then(() => {
     showToast('Key copied to clipboard!');
   }).catch(err => {
@@ -1064,40 +1066,20 @@ function checkStoredKey() {
     } else {
       localStorage.removeItem('generatedKey');
       localStorage.removeItem('generatedTime');
-      currentStep = 1;
+      currentStep = 0;
       updateProgress();
     }
   }
 }
 
-function loadKeyHistory() {
-  const history = JSON.parse(localStorage.getItem('keyHistory')) || [];
-  keyHistoryList.innerHTML = '';
-  if (history.length === 0) {
-    keyHistoryList.innerHTML = '<li>No previous keys</li>';
-    return;
-  }
-  const recentKeys = history.slice(-5).reverse();
-  recentKeys.forEach((key, index) => {
-    const li = document.createElement('li');
-    li.textContent = key;
-    keyHistoryList.appendChild(li);
-  });
-}
-
-function addToHistory(key) {
-  let history = JSON.parse(localStorage.getItem('keyHistory')) || [];
-  history.push(key);
-  localStorage.setItem('keyHistory', JSON.stringify(history));
-  loadKeyHistory();
-}
-
 function updateTimer() {
   const storedTime = localStorage.getItem('generatedTime');
+
   if (!storedTime) {
     timeLeft.textContent = '00:00:00';
     return;
   }
+
   const now = Date.now();
   const elapsed = now - parseInt(storedTime);
   const remaining = KEY_EXPIRY_HOURS * 60 * 60 * 1000 - elapsed;
@@ -1108,10 +1090,32 @@ function updateTimer() {
     timeLeft.textContent = '00:00:00';
     return;
   }
+
   const hours = Math.floor(remaining / (1000 * 60 * 60));
   const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+
   timeLeft.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+function setupAutoRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  
+  refreshTimer = setInterval(() => {
+    const storedTime = localStorage.getItem('generatedTime');
+    if (!storedTime) return;
+    
+    const now = Date.now();
+    const elapsed = now - parseInt(storedTime);
+    const expiryTime = KEY_EXPIRY_HOURS * 60 * 60 * 1000;
+    
+    if (elapsed > expiryTime) {
+      clearInterval(refreshTimer);
+      localStorage.removeItem('generatedKey');
+      localStorage.removeItem('generatedTime');
+      location.reload();
+    }
+  }, 60000);
 }
 
 function showToast(message) {
@@ -1122,23 +1126,41 @@ function showToast(message) {
   }, 3000);
 }
 
-function setupAutoRefresh() {
-  if (refreshTimer) clearInterval(refreshTimer);
-  refreshTimer = setInterval(() => {
-    const storedTime = localStorage.getItem('generatedTime');
-    if (!storedTime) return;
-    const now = Date.now();
-    const elapsed = now - parseInt(storedTime);
-    const expiryTime = KEY_EXPIRY_HOURS * 60 * 60 * 1000;
-    if (elapsed > expiryTime) {
-      clearInterval(refreshTimer);
-      localStorage.removeItem('generatedKey');
-      localStorage.removeItem('generatedTime');
-      location.reload();
+// Initialize
+function init() {
+  initBackgroundEffects();
+  checkStoredKey();
+  updateProgress();
+  updateTimer();
+  loadKeyHistory();
+  
+  // Проверяем, вернулись ли мы с чекпоинта
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has('checkpoint')) {
+    const checkpoint = urlParams.get('checkpoint');
+    
+    if (checkpoint === '1') {
+      currentStep = 1;
+      updateProgress();
+      showToast('Checkpoint 1 completed!');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (checkpoint === '2') {
+      currentStep = 2;
+      updateProgress();
+      showToast('Checkpoint 2 completed!');
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, 60000);
+  }
+  
+  // Добавляем обработчики событий
+  startBtn.addEventListener('click', startProcess);
+  continueBtn.addEventListener('click', continueProcess);
+  generateBtn.addEventListener('click', generateKey);
+  copyBtn.addEventListener('click', copyKey);
+  cancelModalBtn.addEventListener('click', closeModal);
 }
 
+// Запускаем приложение
 setInterval(updateTimer, 1000);
 window.addEventListener('load', init);
 </script>
