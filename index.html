@@ -777,12 +777,11 @@
   </form>
   <iframe name="hiddenFrame" style="display:none;"></iframe>
 
-  <script>
-
+<script>
 (function(){
   // Проверяем, есть ли флаг чекпоинта 1
   if (localStorage.getItem('checkpoint1') !== 'ok') {
-    // Если нет, отправляем на первый сайт (замени ссылку на свой первый сайт!)
+    // Если нет, отправляем на первый сайт
     window.location.href = 'https://treenivkesys.netlify.app/';
   } else {
     // Если есть, ставим флаг чекпоинта 2
@@ -790,29 +789,29 @@
   }
 })();
 
-    // Инициализация фоновых эффектов
-    function initBackgroundEffects() {
-      const container = document.getElementById('backgroundEffects');
-      
-      // Добавляем частицы (увеличил количество)
-      const particleCount = 300;
-      for (let i = 0; i < particleCount; i++) {
-        const particle = document.createElement('div');
-        particle.classList.add('particle');
-        
-        const size = Math.random() * 6 + 2;
-        particle.style.width = `${size}px`;
-        particle.style.height = `${size}px`;
-        particle.style.left = `${Math.random() * 100}%`;
-        particle.style.bottom = `-${size}px`;
-        
-        const duration = Math.random() * 30 + 20;
-        particle.style.animationDuration = `${duration}s`;
-        particle.style.animationDelay = `${Math.random() * 15}s`;
-        
-        container.appendChild(particle);
-      }
-    }
+// Инициализация фоновых эффектов
+function initBackgroundEffects() {
+  const container = document.getElementById('backgroundEffects');
+  
+  // Добавляем частицы
+  const particleCount = 300;
+  for (let i = 0; i < particleCount; i++) {
+    const particle = document.createElement('div');
+    particle.classList.add('particle');
+    
+    const size = Math.random() * 6 + 2;
+    particle.style.width = `${size}px`;
+    particle.style.height = `${size}px`;
+    particle.style.left = `${Math.random() * 100}%`;
+    particle.style.bottom = `-${size}px`;
+    
+    const duration = Math.random() * 30 + 20;
+    particle.style.animationDuration = `${duration}s`;
+    particle.style.animationDelay = `${Math.random() * 15}s`;
+    
+    container.appendChild(particle);
+  }
+}
 
 // DOM Elements
 const startBtn = document.getElementById('startBtn');
@@ -831,6 +830,11 @@ const progressText3 = document.getElementById('progressText3');
 const keyCount = document.getElementById('keyCount');
 const timeLeft = document.getElementById('timeLeft');
 const statusText = document.getElementById('statusText');
+const toast = document.getElementById('toast');
+const keyInput = document.getElementById('keyInput');
+const keyHistoryList = document.getElementById('keyHistoryList');
+
+// Создаем модальное окно для чекпоинтов
 const checkpointModal = document.createElement('div');
 checkpointModal.id = 'checkpointModal';
 checkpointModal.className = 'checkpoint-modal';
@@ -849,9 +853,6 @@ const modalTitle = document.getElementById('modalTitle');
 const modalText = document.getElementById('modalText');
 const visitLinkBtn = document.getElementById('visitLinkBtn');
 const cancelModalBtn = document.getElementById('cancelModalBtn');
-const toast = document.getElementById('toast');
-const keyInput = document.getElementById('keyInput');
-const keyHistoryList = document.getElementById('keyHistoryList');
 
 // State
 let currentStep = 1;
@@ -865,26 +866,9 @@ const checkpointLinks = [
 const adLink = 'https://www.profitableratecpm.com/srddr2t9?key=bf6f75b240992269ae27f4ae790191e4';
 let currentCheckpoint = 0;
 let refreshTimer = null;
+let sessionId = Date.now().toString();
 
-function startProcess() {
-  if (!canGenerateKey()) {
-    showToast('You can generate a key only once every 12 hours');
-    return;
-  }
-  
-  // Сбрасываем счетчик рекламы
-  localStorage.removeItem('adShownCount');
-  currentCheckpoint = 0;
-  openCheckpointModal();
-}
-
-function continueProcess() {
-  // Сбрасываем счетчик рекламы
-  localStorage.removeItem('adShownCount');
-  currentCheckpoint = 1;
-  openCheckpointModal();
-}
-
+// Основные функции
 function openCheckpointModal() {
   if (currentCheckpoint === 0) {
     modalTitle.textContent = 'Checkpoint 1';
@@ -907,15 +891,8 @@ function openCheckpointModal() {
   }
 }
 
-function canGenerateKey() {
-  const storedTime = localStorage.getItem('generatedTime');
-  if (!storedTime) return true;
-
-  const now = Date.now();
-  const elapsed = now - parseInt(storedTime);
-  const expiryTime = KEY_EXPIRY_HOURS * 60 * 60 * 1000;
-
-  return elapsed > expiryTime;
+function closeModal() {
+  checkpointModal.classList.remove('active');
 }
 
 function handleAdBeforeCheckpoint(checkpointUrl, checkpointNumber) {
@@ -923,12 +900,11 @@ function handleAdBeforeCheckpoint(checkpointUrl, checkpointNumber) {
   adShownCount++;
   localStorage.setItem('adShownCount', adShownCount.toString());
   
-  // Всегда открываем рекламу
+  // Открываем рекламу
   const adWindow = window.open(adLink, '_blank');
   
   if (adShownCount < 2) {
     showToast(`Please visit the ad link (${adShownCount}/2)`);
-    // Фокусируем окно с рекламой
     if (adWindow) {
       adWindow.focus();
     }
@@ -942,7 +918,237 @@ function handleAdBeforeCheckpoint(checkpointUrl, checkpointNumber) {
   }
 }
 
-// Initialize
+function canGenerateKey() {
+  const storedTime = localStorage.getItem('generatedTime');
+  if (!storedTime) return true;
+
+  const now = Date.now();
+  const elapsed = now - parseInt(storedTime);
+  const expiryTime = KEY_EXPIRY_HOURS * 60 * 60 * 1000;
+
+  return elapsed > expiryTime;
+}
+
+function startProcess() {
+  if (!canGenerateKey()) {
+    showToast('You can generate a key only once every 12 hours');
+    return;
+  }
+  
+  localStorage.removeItem('adShownCount');
+  currentCheckpoint = 0;
+  openCheckpointModal();
+}
+
+function continueProcess() {
+  localStorage.removeItem('adShownCount');
+  currentCheckpoint = 1;
+  openCheckpointModal();
+}
+
+function updateProgress() {
+  step1.classList.remove('active', 'completed');
+  step2.classList.remove('active', 'completed');
+  step3.classList.remove('active', 'completed');
+  progressText1.classList.remove('active');
+  progressText2.classList.remove('active');
+  progressText3.classList.remove('active');
+  
+  if (currentStep === 1) {
+    progressBar.style.width = '50%';
+    step1.classList.add('completed');
+    step2.classList.add('active');
+    progressText1.classList.add('active');
+    progressText2.classList.add('active');
+    startBtn.disabled = true;
+    continueBtn.disabled = false;
+    generateBtn.disabled = true;
+    statusText.textContent = 'CHECKPOINT 1 COMPLETED';
+  } else if (currentStep === 2) {
+    progressBar.style.width = '100%';
+    step1.classList.add('completed');
+    step2.classList.add('completed');
+    step3.classList.add('active');
+    progressText1.classList.add('active');
+    progressText2.classList.add('active');
+    progressText3.classList.add('active');
+    startBtn.disabled = true;
+    continueBtn.disabled = true;
+    generateBtn.disabled = !canGenerateKey();
+    statusText.textContent = 'CHECKPOINT 2 COMPLETED';
+  }
+  
+  const hasKey = localStorage.getItem('generatedKey') ? 1 : 0;
+  keyCount.textContent = `${hasKey}/1`;
+}
+
+function generateKey() {
+  if (!canGenerateKey()) {
+    showToast('You can generate a key only once every 12 hours');
+    return;
+  }
+  
+  const key = generateRandomKey();
+  const timestamp = Date.now();
+  
+  localStorage.setItem('generatedKey', key);
+  localStorage.setItem('generatedTime', timestamp.toString());
+  generatedKey = key;
+  keyGeneratedTime = timestamp;
+  
+  addToHistory(key);
+  
+  keyDisplay.innerHTML = `<div class="key">${key}</div>`;
+  keyTitle.textContent = 'YOUR PREMIUM KEY';
+  step3.classList.add('completed');
+  progressBar.style.width = '100%';
+  progressText3.classList.add('active');
+  generateBtn.disabled = true;
+  copyBtn.disabled = false;
+  statusText.textContent = 'ACTIVE';
+  keyCount.textContent = '1/1';
+  
+  sendKeyToGoogleSheets(key);
+  showToast('Key generated successfully!');
+  setupAutoRefresh();
+}
+
+function generateRandomKey() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = 'KNC-';
+  for (let i = 0; i < 12; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+function loadKeyHistory() {
+  const history = JSON.parse(localStorage.getItem('keyHistory')) || [];
+  keyHistoryList.innerHTML = '';
+  
+  if (history.length === 0) {
+    keyHistoryList.innerHTML = '<li>No previous keys</li>';
+    return;
+  }
+  
+  const recentKeys = history.slice(-5).reverse();
+  recentKeys.forEach((key, index) => {
+    const li = document.createElement('li');
+    li.textContent = key;
+    keyHistoryList.appendChild(li);
+  });
+}
+
+function addToHistory(key) {
+  let history = JSON.parse(localStorage.getItem('keyHistory')) || [];
+  history.push(key);
+  localStorage.setItem('keyHistory', JSON.stringify(history));
+  loadKeyHistory();
+}
+
+function sendKeyToGoogleSheets(key) {
+  keyInput.value = key;
+  setTimeout(() => {
+    document.getElementById('keyForm').submit();
+  }, 100);
+}
+
+function copyKey() {
+  if (!generatedKey) return;
+  
+  navigator.clipboard.writeText(generatedKey).then(() => {
+    showToast('Key copied to clipboard!');
+  }).catch(err => {
+    console.error('Failed to copy key:', err);
+  });
+}
+
+function checkStoredKey() {
+  const storedKey = localStorage.getItem('generatedKey');
+  const storedTime = localStorage.getItem('generatedTime');
+  
+  if (storedKey && storedTime) {
+    const now = Date.now();
+    const elapsed = now - parseInt(storedTime);
+    const expiryTime = KEY_EXPIRY_HOURS * 60 * 60 * 1000;
+    
+    if (elapsed < expiryTime) {
+      generatedKey = storedKey;
+      keyGeneratedTime = parseInt(storedTime);
+      keyDisplay.innerHTML = `<div class="key">${storedKey}</div>`;
+      keyTitle.textContent = 'YOUR PREMIUM KEY';
+      copyBtn.disabled = false;
+      statusText.textContent = 'ACTIVE';
+      keyCount.textContent = '1/1';
+      
+      step1.classList.add('completed');
+      step2.classList.add('completed');
+      step3.classList.add('completed');
+      progressBar.style.width = '100%';
+      progressText1.classList.add('active');
+      progressText2.classList.add('active');
+      progressText3.classList.add('active');
+      generateBtn.disabled = true;
+      continueBtn.disabled = true;
+      startBtn.disabled = true;
+      
+      setupAutoRefresh();
+    } else {
+      localStorage.removeItem('generatedKey');
+      localStorage.removeItem('generatedTime');
+      currentStep = 0;
+      updateProgress();
+    }
+  }
+}
+
+function setupAutoRefresh() {
+  if (refreshTimer) {
+    clearTimeout(refreshTimer);
+  }
+  
+  refreshTimer = setTimeout(() => {
+    localStorage.removeItem('generatedKey');
+    localStorage.removeItem('generatedTime');
+    window.location.reload();
+  }, KEY_EXPIRY_HOURS * 60 * 60 * 1000);
+}
+
+function updateTimer() {
+  const storedTime = localStorage.getItem('generatedTime');
+  
+  if (!storedTime) {
+    timeLeft.textContent = '00:00:00';
+    return;
+  }
+  
+  const now = Date.now();
+  const elapsed = now - parseInt(storedTime);
+  const remaining = KEY_EXPIRY_HOURS * 60 * 60 * 1000 - elapsed;
+  
+  if (remaining <= 0) {
+    localStorage.removeItem('generatedKey');
+    localStorage.removeItem('generatedTime');
+    timeLeft.textContent = '00:00:00';
+    return;
+  }
+  
+  const hours = Math.floor(remaining / (1000 * 60 * 60));
+  const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+  
+  timeLeft.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+function showToast(message) {
+  toast.textContent = message;
+  toast.classList.add('active');
+  setTimeout(() => {
+    toast.classList.remove('active');
+  }, 3000);
+}
+
+// Инициализация
 function init() {
   initBackgroundEffects();
   checkStoredKey();
@@ -950,7 +1156,7 @@ function init() {
   updateTimer();
   loadKeyHistory();
   
-  // Проверяем, вернулись ли мы с чекпоинта
+  // Проверяем параметры URL после возвращения с чекпоинта
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.has('checkpoint')) {
     const checkpoint = urlParams.get('checkpoint');
@@ -968,6 +1174,7 @@ function init() {
     }
   }
   
+  // Назначаем обработчики событий
   startBtn.addEventListener('click', startProcess);
   continueBtn.addEventListener('click', continueProcess);
   generateBtn.addEventListener('click', generateKey);
@@ -975,234 +1182,9 @@ function init() {
   cancelModalBtn.addEventListener('click', closeModal);
 }
 
-function closeModal() {
-  checkpointModal.classList.remove('active');
-}
-    
-    function loadKeyHistory() {
-      const history = JSON.parse(localStorage.getItem('keyHistory')) || [];
-      keyHistoryList.innerHTML = '';
-      
-      if (history.length === 0) {
-        keyHistoryList.innerHTML = '<li>No previous keys</li>';
-        return;
-      }
-      
-      // Показываем последние 5 ключей через запятую
-      const recentKeys = history.slice(-5).reverse();
-      recentKeys.forEach((key, index) => {
-        const li = document.createElement('li');
-        li.textContent = key;
-        keyHistoryList.appendChild(li);
-      });
-    }
-    
-    function addToHistory(key) {
-      let history = JSON.parse(localStorage.getItem('keyHistory')) || [];
-      history.push(key);
-      localStorage.setItem('keyHistory', JSON.stringify(history));
-      loadKeyHistory();
-    }
-    
-    function startProcess() {
-      // На втором сайте кнопка Start Process отключена
-      return;
-    }
-    
-    function visitSecondCheckpoint() {
-      const url = checkpointLinks[1];
-      
-      // Сохраняем информацию о чекпоинте с идентификатором сессии
-      localStorage.setItem('currentCheckpoint', '2');
-      localStorage.setItem('checkpointSession', sessionId);
-      
-      window.location.href = 'https://example.com/third.html';
-    }
-    
-    function updateProgress() {
-      step1.classList.remove('active', 'completed');
-      step2.classList.remove('active', 'completed');
-      step3.classList.remove('active', 'completed');
-      progressText1.classList.remove('active');
-      progressText2.classList.remove('active');
-      progressText3.classList.remove('active');
-      
-      if (currentStep === 1) {
-        progressBar.style.width = '50%';
-        step1.classList.add('completed');
-        step2.classList.add('active');
-        progressText1.classList.add('active');
-        progressText2.classList.add('active');
-        startBtn.disabled = true;
-        continueBtn.disabled = false;
-        generateBtn.disabled = true;
-        statusText.textContent = 'CHECKPOINT 1 COMPLETED';
-      } else if (currentStep === 2) {
-        progressBar.style.width = '75%';
-        step1.classList.add('completed');
-        step2.classList.add('completed');
-        step3.classList.add('active');
-        progressText1.classList.add('active');
-        progressText2.classList.add('active');
-        progressText3.classList.add('active');
-        startBtn.disabled = true;
-        continueBtn.disabled = true;
-        generateBtn.disabled = !canGenerateKey();
-        statusText.textContent = 'CHECKPOINT 2 COMPLETED';
-      }
-      
-      const hasKey = localStorage.getItem('generatedKey') ? 1 : 0;
-      keyCount.textContent = `${hasKey}/1`;
-    }
-    
-    function generateKey() {
-      // Проверяем, можно ли генерировать ключ
-      if (!canGenerateKey()) {
-        showToast('You can generate a key only once every 12 hours');
-        return;
-      }
-      
-      const key = generateRandomKey();
-      const timestamp = Date.now();
-      
-      localStorage.setItem('generatedKey', key);
-      localStorage.setItem('generatedTime', timestamp.toString());
-      generatedKey = key;
-      keyGeneratedTime = timestamp;
-      
-      addToHistory(key);
-      
-      keyDisplay.innerHTML = `<div class="key">${key}</div>`;
-      keyTitle.textContent = 'YOUR PREMIUM KEY';
-      step3.classList.add('completed');
-      progressBar.style.width = '100%';
-      progressText3.classList.add('active');
-      generateBtn.disabled = true;
-      copyBtn.disabled = false;
-      statusText.textContent = 'ACTIVE';
-      keyCount.textContent = '1/1';
-      
-      // Сбрасываем состояние процесса
-      currentStep = 0;
-      
-      sendKeyToGoogleSheets(key);
-      showToast('Key generated successfully!');
-      setupAutoRefresh();
-    }
-    
-    function setupAutoRefresh() {
-      if (refreshTimer) {
-        clearTimeout(refreshTimer);
-      }
-      
-      refreshTimer = setTimeout(() => {
-        localStorage.removeItem('generatedKey');
-        localStorage.removeItem('generatedTime');
-        window.location.reload();
-      }, KEY_EXPIRY_HOURS * 60 * 60 * 1000);
-    }
-    
-    function generateRandomKey() {
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      let result = 'KNC-';
-      for (let i = 0; i < 12; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return result;
-    }
-    
-    function sendKeyToGoogleSheets(key) {
-      keyInput.value = key;
-      setTimeout(() => {
-        document.getElementById('keyForm').submit();
-      }, 100);
-    }
-    
-    function copyKey() {
-      if (!generatedKey) return;
-      
-      navigator.clipboard.writeText(generatedKey).then(() => {
-        showToast('Key copied to clipboard!');
-      }).catch(err => {
-        console.error('Failed to copy key:', err);
-      });
-    }
-    
-    function checkStoredKey() {
-      const storedKey = localStorage.getItem('generatedKey');
-      const storedTime = localStorage.getItem('generatedTime');
-      
-      if (storedKey && storedTime) {
-        const now = Date.now();
-        const elapsed = now - parseInt(storedTime);
-        const expiryTime = KEY_EXPIRY_HOURS * 60 * 60 * 1000;
-        
-        if (elapsed < expiryTime) {
-          generatedKey = storedKey;
-          keyGeneratedTime = parseInt(storedTime);
-          keyDisplay.innerHTML = `<div class="key">${storedKey}</div>`;
-          keyTitle.textContent = 'YOUR PREMIUM KEY';
-          copyBtn.disabled = false;
-          statusText.textContent = 'ACTIVE';
-          keyCount.textContent = '1/1';
-          
-          step1.classList.add('completed');
-          step2.classList.add('completed');
-          step3.classList.add('completed');
-          progressBar.style.width = '100%';
-          progressText1.classList.add('active');
-          progressText2.classList.add('active');
-          progressText3.classList.add('active');
-          generateBtn.disabled = true;
-          continueBtn.disabled = true;
-          startBtn.disabled = true;
-          
-          setupAutoRefresh();
-        } else {
-          localStorage.removeItem('generatedKey');
-          localStorage.removeItem('generatedTime');
-          currentStep = 0;
-          updateProgress();
-        }
-      }
-    }
-    
-    function updateTimer() {
-      const storedTime = localStorage.getItem('generatedTime');
-      
-      if (!storedTime) {
-        timeLeft.textContent = '00:00:00';
-        return;
-      }
-      
-      const now = Date.now();
-      const elapsed = now - parseInt(storedTime);
-      const remaining = KEY_EXPIRY_HOURS * 60 * 60 * 1000 - elapsed;
-      
-      if (remaining <= 0) {
-        localStorage.removeItem('generatedKey');
-        localStorage.removeItem('generatedTime');
-        timeLeft.textContent = '00:00:00';
-        return;
-      }
-      
-      const hours = Math.floor(remaining / (1000 * 60 * 60));
-      const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
-      
-      timeLeft.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-    }
-    
-    function showToast(message) {
-      toast.textContent = message;
-      toast.classList.add('active');
-      setTimeout(() => {
-        toast.classList.remove('active');
-      }, 3000);
-    }
-    
-    setInterval(updateTimer, 1000);
-    window.addEventListener('load', init);
-  </script>
+// Запускаем приложение
+setInterval(updateTimer, 1000);
+window.addEventListener('load', init);
+</script>
 </body>
 </html>
