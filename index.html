@@ -780,19 +780,6 @@
   <iframe name="hiddenFrame" style="display:none;"></iframe>
 
 <script>
-(function() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const source = urlParams.get('source');
-  const checkpoint = urlParams.get('checkpoint');
-
-  if (checkpoint === '1' && source) {
-    localStorage.setItem('checkpoint2', 'ok');
-    window.history.replaceState({}, document.title, window.location.pathname);
-  } else if (!localStorage.getItem('checkpoint2')) {
-    window.location.href = 'https://treenivkesys.netlify.app/';
-    return;
-  }
-})();
 
 // DOM Elements
 const startBtn = document.getElementById('startBtn');
