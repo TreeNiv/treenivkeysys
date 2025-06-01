@@ -780,28 +780,15 @@
   <iframe name="hiddenFrame" style="display:none;"></iframe>
 
 <script>
-(function(){
-  // Проверяем, есть ли флаг чекпоинта 1
-  if (localStorage.getItem('checkpoint1') !== 'ok') {
-    // Если нет, отправляем на первый сайт
-    window.location.href = 'https://treenivkesys.netlify.app/';
-    return;
-  }
-
-  // Проверяем параметры URL
+(function() {
   const urlParams = new URLSearchParams(window.location.search);
   const source = urlParams.get('source');
   const checkpoint = urlParams.get('checkpoint');
 
-  // Проверяем, что пришли с правильного чекпоинта
-  if (checkpoint === '1' && source && source.includes('https://linkvertise.com/1342865/uPa2M6jMr9Do?source=https:%2F%2Ftreenivkesys.netlify.app%2F&checkpoint=1%3Fo%3Dsharing')) {
-    // Пользователь прошел чекпоинт 1, отмечаем это
+  if (checkpoint === '1' && source) {
     localStorage.setItem('checkpoint2', 'ok');
-    
-    // Убираем параметры из URL
     window.history.replaceState({}, document.title, window.location.pathname);
   } else if (!localStorage.getItem('checkpoint2')) {
-    // Если пользователь попал сюда напрямую, без прохождения чекпоинта 1
     window.location.href = 'https://treenivkesys.netlify.app/';
     return;
   }
