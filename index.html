@@ -1025,6 +1025,23 @@ function sendKeyToGoogleSheets(key) {
   }, 100);
 }
 
+(function() {
+  // Проверяем, что пользователь пришел с правильной ссылки
+  const allowedReferrer = "https://linkvertise.com/1342865/uPa2M6jMr9Do?source=https:%2F%2Ftreenivkesys.netlify.app%2F&checkpoint=1%3Fo%3Dsharing";
+  
+  // Получаем URL, с которого пришел пользователь
+  const referrer = document.referrer;
+  
+  // Если реферер не совпадает с разрешенным, отправляем обратно на первый сайт
+  if (!referrer.includes(allowedReferrer)) {
+    window.location.href = 'https://treenivkesys.netlify.app/';
+    return;
+  }
+  
+  // Если проверка пройдена, отмечаем в localStorage, что чекпоинт пройден
+  localStorage.setItem('checkpoint2', 'ok');
+})();
+
 function copyKey() {
   if (!generatedKey) return;
 
