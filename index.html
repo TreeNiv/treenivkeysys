@@ -1136,23 +1136,25 @@ function init() {
   updateTimer();
   loadKeyHistory();
   
-  // Проверяем, вернулись ли мы с чекпоинта
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.has('checkpoint')) {
-    const checkpoint = urlParams.get('checkpoint');
-    
-    if (checkpoint === '1') {
-      currentStep = 1;
-      updateProgress();
-      showToast('Checkpoint 1 completed!');
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } else if (checkpoint === '2') {
-      currentStep = 2;
-      updateProgress();
-      showToast('Checkpoint 2 completed!');
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }
+// Проверяем, откуда пришел пользователь
+const urlParams = new URLSearchParams(window.location.search);
+const fromCheckpoint = urlParams.get('from');
+
+if (fromCheckpoint === 'checkpoint1') {
+  // Пользователь прошел чекпоинт 1, отмечаем это
+  localStorage.setItem('checkpoint2', 'ok');
+  
+  // Обновляем UI (если нужно)
+  currentStep = 2;
+  updateProgress();
+  showToast('Checkpoint 2 completed!');
+  
+  // Убираем параметр из URL
+  window.history.replaceState({}, document.title, window.location.pathname);
+} else if (!localStorage.getItem('checkpoint2')) {
+  // Если пользователь попал сюда напрямую, без прохождения чекпоинта 1
+  window.location.href = 'https://treenivkesys.netlify.app/';
+}
   
   // Добавляем обработчики событий
   startBtn.addEventListener('click', startProcess);
