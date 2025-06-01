@@ -1138,9 +1138,11 @@ function init() {
   
 // Проверяем, откуда пришел пользователь
 const urlParams = new URLSearchParams(window.location.search);
-const fromCheckpoint = urlParams.get('from');
+const source = urlParams.get('source');
+const checkpoint = urlParams.get('checkpoint');
 
-if (fromCheckpoint === 'checkpoint1') {
+// Разрешаем доступ только если пришли с правильного чекпоинта
+if (checkpoint === '1' && source === 'https://linkvertise.com/1342865/uPa2M6jMr9Do?source=https:%2F%2Ftreenivkesys.netlify.app%2F&checkpoint=1%3Fo%3Dsharing') {
   // Пользователь прошел чекпоинт 1, отмечаем это
   localStorage.setItem('checkpoint2', 'ok');
   
@@ -1149,7 +1151,7 @@ if (fromCheckpoint === 'checkpoint1') {
   updateProgress();
   showToast('Checkpoint 2 completed!');
   
-  // Убираем параметр из URL
+  // Убираем параметры из URL
   window.history.replaceState({}, document.title, window.location.pathname);
 } else if (!localStorage.getItem('checkpoint2')) {
   // Если пользователь попал сюда напрямую, без прохождения чекпоинта 1
