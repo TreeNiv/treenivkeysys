@@ -781,6 +781,21 @@
 
 <script>
 
+// Проверка доступа по чекпоинтам (должен быть самым первым!)
+(function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const source = urlParams.get('source');
+  const checkpoint = urlParams.get('checkpoint');
+
+  if (checkpoint === '1' && source) {
+    localStorage.setItem('checkpoint2', 'ok');
+    window.history.replaceState({}, document.title, window.location.pathname);
+  } else if (!localStorage.getItem('checkpoint2')) {
+    window.location.href = 'https://treenivkesys.netlify.app/';
+    return;
+  }
+})();
+
 // DOM Elements
 const startBtn = document.getElementById('startBtn');
 const continueBtn = document.getElementById('continueBtn');
@@ -835,20 +850,16 @@ function openCheckpointModal() {
   if (currentCheckpoint === 0) {
     modalTitle.textContent = 'Checkpoint 1';
     modalText.textContent = 'Please visit the following link and return to this page to continue.';
-    
     visitLinkBtn.onclick = function() {
       handleAdBeforeCheckpoint(checkpointLinks[0], '1');
     };
-    
     checkpointModal.classList.add('active');
   } else if (currentCheckpoint === 1) {
     modalTitle.textContent = 'Checkpoint 2';
     modalText.textContent = 'Please visit the following link and return to this page to continue.';
-    
     visitLinkBtn.onclick = function() {
       handleAdBeforeCheckpoint(checkpointLinks[1], '2');
     };
-    
     checkpointModal.classList.add('active');
   }
 }
@@ -858,17 +869,13 @@ function handleAdBeforeCheckpoint(checkpointUrl, checkpointNumber) {
   adShownCount++;
   localStorage.setItem('adShownCount', adShownCount.toString());
   
-  // Всегда открываем рекламу
+  // Открываем рекламу
   const adWindow = window.open(adLink, '_blank');
   
   if (adShownCount < 2) {
     showToast(`Please visit the ad link (${adShownCount}/2)`);
-    // Фокусируем окно с рекламой
-    if (adWindow) {
-      adWindow.focus();
-    }
+    if (adWindow) adWindow.focus();
   } else {
-    // После 2 показов рекламы переходим на чекпоинт
     setTimeout(() => {
       window.location.href = checkpointUrl + '?source=' + encodeURIComponent(window.location.href) + '&checkpoint=' + checkpointNumber;
       localStorage.removeItem('adShownCount');
@@ -920,11 +927,9 @@ function updateProgress() {
 function canGenerateKey() {
   const storedTime = localStorage.getItem('generatedTime');
   if (!storedTime) return true;
-
   const now = Date.now();
   const elapsed = now - parseInt(storedTime);
   const expiryTime = KEY_EXPIRY_HOURS * 60 * 60 * 1000;
-
   return elapsed > expiryTime;
 }
 
@@ -970,7 +975,7 @@ function loadKeyHistory() {
   }
 
   const recentKeys = history.slice(-5).reverse();
-  recentKeys.forEach((key, index) => {
+  recentKeys.forEach((key) => {
     const li = document.createElement('li');
     li.textContent = key;
     keyHistoryList.appendChild(li);
@@ -991,26 +996,8 @@ function sendKeyToGoogleSheets(key) {
   }, 100);
 }
 
-(function() {
-  // Проверяем, что пользователь пришел с правильной ссылки
-  const allowedReferrer = "https://linkvertise.com/1342865/uPa2M6jMr9Do?source=https:%2F%2Ftreenivkesys.netlify.app%2F&checkpoint=1%3Fo%3Dsharing";
-  
-  // Получаем URL, с которого пришел пользователь
-  const referrer = document.referrer;
-  
-  // Если реферер не совпадает с разрешенным, отправляем обратно на первый сайт
-  if (!referrer.includes(allowedReferrer)) {
-    window.location.href = 'https://treenivkesys.netlify.app/';
-    return;
-  }
-  
-  // Если проверка пройдена, отмечаем в localStorage, что чекпоинт пройден
-  localStorage.setItem('checkpoint2', 'ok');
-})();
-
 function copyKey() {
   if (!generatedKey) return;
-
   navigator.clipboard.writeText(generatedKey).then(() => {
     showToast('Key copied to clipboard!');
   }).catch(err => {
@@ -1021,12 +1008,10 @@ function copyKey() {
 function checkStoredKey() {
   const storedKey = localStorage.getItem('generatedKey');
   const storedTime = localStorage.getItem('generatedTime');
-
   if (storedKey && storedTime) {
     const now = Date.now();
     const elapsed = now - parseInt(storedTime);
     const expiryTime = KEY_EXPIRY_HOURS * 60 * 60 * 1000;
-
     if (elapsed < expiryTime) {
       generatedKey = storedKey;
       keyGeneratedTime = parseInt(storedTime);
@@ -1035,7 +1020,6 @@ function checkStoredKey() {
       copyBtn.disabled = false;
       statusText.textContent = 'ACTIVE';
       keyCount.textContent = '1/1';
-
       step1.classList.add('completed');
       step2.classList.add('completed');
       step3.classList.add('completed');
@@ -1046,7 +1030,6 @@ function checkStoredKey() {
       generateBtn.disabled = true;
       continueBtn.disabled = true;
       startBtn.disabled = true;
-
       setupAutoRefresh();
     } else {
       localStorage.removeItem('generatedKey');
@@ -1059,41 +1042,33 @@ function checkStoredKey() {
 
 function updateTimer() {
   const storedTime = localStorage.getItem('generatedTime');
-
   if (!storedTime) {
     timeLeft.textContent = '00:00:00';
     return;
   }
-
   const now = Date.now();
   const elapsed = now - parseInt(storedTime);
   const remaining = KEY_EXPIRY_HOURS * 60 * 60 * 1000 - elapsed;
-
   if (remaining <= 0) {
     localStorage.removeItem('generatedKey');
     localStorage.removeItem('generatedTime');
     timeLeft.textContent = '00:00:00';
     return;
   }
-
   const hours = Math.floor(remaining / (1000 * 60 * 60));
   const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
-
   timeLeft.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
 function setupAutoRefresh() {
   if (refreshTimer) clearInterval(refreshTimer);
-  
   refreshTimer = setInterval(() => {
     const storedTime = localStorage.getItem('generatedTime');
     if (!storedTime) return;
-    
     const now = Date.now();
     const elapsed = now - parseInt(storedTime);
     const expiryTime = KEY_EXPIRY_HOURS * 60 * 60 * 1000;
-    
     if (elapsed > expiryTime) {
       clearInterval(refreshTimer);
       localStorage.removeItem('generatedKey');
@@ -1113,35 +1088,13 @@ function showToast(message) {
 
 // Initialize
 function init() {
-  initBackgroundEffects();
+  // Если есть функция для анимированного фона, вызови её
+  if (typeof initBackgroundEffects === "function") initBackgroundEffects();
   checkStoredKey();
   updateProgress();
   updateTimer();
   loadKeyHistory();
-  
-// Проверяем, откуда пришел пользователь
-const urlParams = new URLSearchParams(window.location.search);
-const source = urlParams.get('source');
-const checkpoint = urlParams.get('checkpoint');
 
-// Разрешаем доступ только если пришли с правильного чекпоинта
-if (checkpoint === '1' && source === 'https://linkvertise.com/1342865/uPa2M6jMr9Do?source=https:%2F%2Ftreenivkesys.netlify.app%2F&checkpoint=1%3Fo%3Dsharing') {
-  // Пользователь прошел чекпоинт 1, отмечаем это
-  localStorage.setItem('checkpoint2', 'ok');
-  
-  // Обновляем UI (если нужно)
-  currentStep = 2;
-  updateProgress();
-  showToast('Checkpoint 2 completed!');
-  
-  // Убираем параметры из URL
-  window.history.replaceState({}, document.title, window.location.pathname);
-} else if (!localStorage.getItem('checkpoint2')) {
-  // Если пользователь попал сюда напрямую, без прохождения чекпоинта 1
-  window.location.href = 'https://treenivkesys.netlify.app/';
-}
-  
-  // Добавляем обработчики событий
   startBtn.addEventListener('click', startProcess);
   continueBtn.addEventListener('click', continueProcess);
   generateBtn.addEventListener('click', generateKey);
